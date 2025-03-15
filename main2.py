@@ -2,72 +2,95 @@ import smtplib
 import time
 import itertools
 import random
-import concurrent.futures
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+from email.header import Header
+from email.utils import formataddr
 
-# SMTP accounts
-
+# Zoho və digər e-poçt hesabları
 SMTP_ACCOUNTS = [
-    {"email": "camalzadeyahya8@gmail.com", "password": "rgwb xcxn levz dxwv"},
-    {"email": "camalzadeyahya8@gmail.com", "password": "rgwb xcxn levz dxwv"},
-    {"email": "camalzadeyahya8@gmail.com", "password": "rgwb xcxn levz dxwv"}
+    {"email": "notifer@zohomail.eu", "password": "5HKD19M6xSQr"},  # Zoho hesabı
 ]
 
-SMTP_SERVER = "smtp.gmail.com"
-SMTP_PORT = 587
+# SMTP parametrləri (Zoho üçün)
+SMTP_SERVER = "smtp.zoho.eu"
+SMTP_PORT = 465  # SSL portu
 
+# Alıcılar
 recipients = [
     "qafarovkenan2006@gmail.com",
-    "alibaku2002@gmail.com",
-    "betabankoffice@gmail.com",
-    "backtestbeta64@gmail.com"
+    "aliyevaleyla6277@gmail.com",
+    "ferdiish1974@gmail.com",
+    "j.gooldberg2006@gmail.com",
+    "e.mailkq1239@gmail.com",
+    "qafarovkenan06@gmail.com",
+    "560slide@gmail.com",
+    "konul.mirzammadova@gmail.com"
+]
+
+# Mövzu başlıqları
+subjects = [
+    "Salam, sizə bir mesajımız var",
+    "Yeniliklər haqqında qısa məlumat",
+    "Xəbərdar olmaq üçün bu maili yoxlayın",
+    "Bizi izləyin – yeni yeniliklər buradadır!",
+    "Sadəcə məlumatlandırmaq istədik :)"
 ]
 
 account_cycle = itertools.cycle(SMTP_ACCOUNTS)
-
-subjects = [
-    "Salam! Yeni bir xəbər var ✅",
-    "Diqqət: Bu fürsəti qaçırmayın!",
-    "Sizin üçün vacib bir mesaj 💬",
-    "Sürpriz xəbərlər sizi gözləyir!",
-    "Test mesajı – Gözlənilən e-poçt!"
-]
 
 def send_email(to_email):
     account = next(account_cycle)
     email = account["email"]
     password = account["password"]
-    
+
     try:
-        msg = MIMEMultipart("alternative")  
-        msg["From"] = email
+        msg = MIMEMultipart("alternative")
+        
+        msg["From"] = formataddr((str(Header("Yahya Camalzadə", "utf-8")), email))
+        
         msg["To"] = to_email
         msg["Subject"] = random.choice(subjects)
-        msg["Reply-To"] = email  
+        msg["Reply-To"] = email
 
-        with open("message.html", "r", encoding="utf-8") as file:
-            body_html = file.read()
-            msg.attach(MIMEText(body_html, "html"))
-        body_plain = "Bu, HTML e-poçtun 'plain text' versiyasıdır."
+        body_html = """
+        <html>
+            <body style="font-family: Arial, sans-serif; line-height: 1.6;">
+                <h3>Salam!</h3>
+                <p>Bu mesaj sizə yeni məlumat vermək üçündür.</p>
+                <p>Əlavə suallar üçün cavab yazmaqdan çəkinməyin.</p>
+                <p>Hörmətlə,<br>Komanda</p>
+            </body>
+        </html>
+        """
+        msg.attach(MIMEText(body_html, "html"))
+
+        body_plain = """
+Salam!
+
+Bu mesaj sizə yeni məlumat vermək üçündür.
+Əlavə suallar üçün cavab yazmaqdan çəkinməyin.
+
+Hörmətlə,
+Komanda
+"""
         msg.attach(MIMEText(body_plain, "plain"))
 
-        server = smtplib.SMTP(SMTP_SERVER, SMTP_PORT)
-        server.starttls()
+        server = smtplib.SMTP_SSL(SMTP_SERVER, SMTP_PORT)
         server.login(email, password)
         server.sendmail(email, to_email, msg.as_string())
         server.quit()
-        print(f"✅ Göndərildi: {to_email} ({email} ilə)")
 
-        time.sleep(random.uniform(5, 10))  
+        print(f"✅ Göndərildi: {to_email}")
+        time.sleep(random.randint(15, 30))  
 
     except Exception as e:
         print(f"❌ Xəta: {to_email} -> {e}")
 
 start_time = time.time()
 
-with concurrent.futures.ThreadPoolExecutor(max_workers=3) as executor:
-    executor.map(send_email, recipients)
+for recipient in recipients:
+    send_email(recipient)
 
 end_time = time.time()
 print(f"🕣 Göndəriş tamamlandı!\nÜmumi vaxt: {end_time - start_time:.2f} saniyə")
