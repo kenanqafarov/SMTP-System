@@ -7,34 +7,27 @@ from email.mime.text import MIMEText
 from email.header import Header
 from email.utils import formataddr
 
-# Zoho və digər e-poçt hesabları
+SMTP_SERVER = "mail.rkt.org.az"  
+SMTP_PORT = 465  
+
 SMTP_ACCOUNTS = [
-    {"email": "notifer@zohomail.eu", "password": "5HKD19M6xSQr"},  # Zoho hesabı
+    {"email": "noreply@rkt.org.az", "password": "s64R$y0v5"},  
 ]
 
-# SMTP parametrləri (Zoho üçün)
-SMTP_SERVER = "smtp.zoho.eu"
-SMTP_PORT = 465  # SSL portu
-
-# Alıcılar
 recipients = [
     "qafarovkenan2006@gmail.com",
     "aliyevaleyla6277@gmail.com",
     "ferdiish1974@gmail.com",
-    "j.gooldberg2006@gmail.com",
-    "e.mailkq1239@gmail.com",
-    "qafarovkenan06@gmail.com",
-    "560slide@gmail.com",
-    "konul.mirzammadova@gmail.com"
+    "camalzadeyahya8@gmail.com",
+    "betabankoffice@gmail.com",
+    "backtestbeta64@gmail.com",
+    "yahyavj@code.edu.az",
+    "alibaku2002@gmail.com"
 ]
 
-# Mövzu başlıqları
 subjects = [
     "Salam, sizə bir mesajımız var",
     "Yeniliklər haqqında qısa məlumat",
-    "Xəbərdar olmaq üçün bu maili yoxlayın",
-    "Bizi izləyin – yeni yeniliklər buradadır!",
-    "Sadəcə məlumatlandırmaq istədik :)"
 ]
 
 account_cycle = itertools.cycle(SMTP_ACCOUNTS)
@@ -46,11 +39,10 @@ def send_email(to_email):
 
     try:
         msg = MIMEMultipart("alternative")
-        
-        msg["From"] = formataddr((str(Header("Yahya Camalzadə", "utf-8")), email))
-        
+
+        msg["From"] = formataddr((Header("Sirket Adı", "utf-8").encode(), email))
         msg["To"] = to_email
-        msg["Subject"] = random.choice(subjects)
+        msg["Subject"] = str(Header(random.choice(subjects), "utf-8"))
         msg["Reply-To"] = email
 
         body_html = """
@@ -63,18 +55,19 @@ def send_email(to_email):
             </body>
         </html>
         """
-        msg.attach(MIMEText(body_html, "html"))
 
         body_plain = """
-Salam!
+        Salam!
 
-Bu mesaj sizə yeni məlumat vermək üçündür.
-Əlavə suallar üçün cavab yazmaqdan çəkinməyin.
+        Bu mesaj sizə yeni məlumat vermək üçündür.
+        Əlavə suallar üçün cavab yazmaqdan çəkinməyin.
 
-Hörmətlə,
-Komanda
-"""
-        msg.attach(MIMEText(body_plain, "plain"))
+        Hörmətlə,
+        Komanda
+        """
+
+        msg.attach(MIMEText(body_html, "html", "utf-8"))
+        msg.attach(MIMEText(body_plain, "plain", "utf-8"))
 
         server = smtplib.SMTP_SSL(SMTP_SERVER, SMTP_PORT)
         server.login(email, password)
@@ -82,15 +75,10 @@ Komanda
         server.quit()
 
         print(f"✅ Göndərildi: {to_email}")
-        time.sleep(random.randint(15, 30))  
+        time.sleep(random.randint(15, 30))
 
     except Exception as e:
-        print(f"❌ Xəta: {to_email} -> {e}")
-
-start_time = time.time()
+        print(f"❌ SMTP xətası: {to_email} -> {e}")
 
 for recipient in recipients:
     send_email(recipient)
-
-end_time = time.time()
-print(f"🕣 Göndəriş tamamlandı!\nÜmumi vaxt: {end_time - start_time:.2f} saniyə")
